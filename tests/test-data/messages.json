@@ -1,0 +1,10 @@
+[
+  {
+    "id": "26aa8304-03ac-4166-822e-b4d061ccea42",
+    "name": "Security Auditor",
+    "email": "auditor@qa-firm.com",
+    "subject": "Security Audit Report",
+    "message": "This message verifies local file system persistence.",
+    "createdAt": "2026-11-19T10:25:07.554Z"
+  }
+]

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeSync Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="page">
+
+    <aside class="sidebar">
+
+      <div class="logo-box">
+        <img src="https://res.cloudinary.com/kquvictp/image/upload/f_auto,q_auto/logo_mark" alt="HomeSync logo" class="logo-icon">
+        <div>
+          <div class="logo-title">HomeSync</div>
+          <div class="logo-subtitle">SMART LIVING</div>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">▦</span> Dashboard
+        </a>
+        <a href="#rooms" class="nav-item" data-page="rooms">
+          <span class="nav-icon">⌂</span> Rooms
+        </a>
+        <a href="#devices" class="nav-item" data-page="devices">
+          <span class="nav-icon">▭</span> Devices
+        </a>
+        <a href="settings.html" class="nav-item">
+          <span class="nav-icon">⚙</span> Settings
+        </a>
+        <a href="contact.html" class="nav-item">
+          <span class="nav-icon">✉</span> Contact
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <a href="login.html" class="nav-item" id="account-link">Login</a>
+        <img src="https://res.cloudinary.com/kquvictp/image/upload/f_auto,q_auto/sidebar_plant" alt="Plant decoration" class="sidebar-plant">
+        <p class="sidebar-quote">Smarter home,<br>happier you.</p>
+      </div>
+
+    </aside>
+
+    <main class="main-content">
+
+      <div class="top-row">
+        <div>
+          <p class="greeting" id="page-eyebrow">Good morning,</p>
+          <h1 class="welcome-title" id="page-heading">Welcome back to HomeSync</h1>
+          <p class="welcome-subtitle" id="page-subheading">Control and monitor your connected home devices from one place.</p>
+        </div>
+
+        <a class="profile-box" href="settings.html">
+          <span class="profile-avatar">👤</span>
+          <span class="profile-name" id="profile-name">Guest</span>
+          <span class="profile-arrow">▾</span>
+        </a>
+      </div>
+
+      <p id="home-error" class="form-error"></p>
+
+      <section id="page-dashboard" class="page-section active">
+
+      <div class="hero-banner">
+        <img src="https://res.cloudinary.com/kquvictp/image/upload/f_auto,q_auto/hero_banner" alt="A smarter home for a better you" class="hero-image">
+        <div class="hero-text">
+          <h2>A smarter home<br>for a better you</h2>
+          <div class="hero-line"></div>
+        </div>
+      </div>
+
+      <div class="section-heading-row">
+        <h2 class="section-title">My Devices</h2>
+        <a href="#devices" class="view-all-link" id="view-all-devices">View all →</a>
+      </div>
+
+      <div class="device-grid" id="dashboard-devices"></div>
+
+      <div class="save-energy-card">
+        <div class="save-energy-icon">🌱</div>
+        <div class="save-energy-text">
+          <div class="save-energy-title">Save Energy</div>
+          <div class="save-energy-subtitle">Small changes make a big difference.</div>
+        </div>
+        <button class="save-energy-arrow" type="button">→</button>
+      </div>
+
+      </section>
+
+      <section id="page-rooms" class="page-section">
+
+        <div class="section-heading-row">
+          <h2 class="section-title">My Rooms</h2>
+        </div>
+
+        <form id="room-form" class="entry-form">
+          <input class="field" id="room-name" name="name" placeholder="Room name" maxlength="40" required>
+          <button class="save-btn" type="submit">Add room</button>
+          <p id="room-form-error" class="form-error"></p>
+        </form>
+
+        <div class="room-grid" id="room-grid"></div>
+
+      </section>
+
+      <section id="page-devices" class="page-section">
+
+        <div class="section-heading-row">
+          <h2 class="section-title">All Devices</h2>
+        </div>
+
+        <form id="device-form" class="entry-form">
+          <input class="field" id="device-name" name="name" placeholder="Device name" maxlength="40" required>
+          <select class="field" id="device-room" name="room" required></select>
+          <input class="field" id="device-type" name="type" placeholder="Type, such as Light or AC" maxlength="30" required>
+          <button class="save-btn" id="device-submit" type="submit">Add device</button>
+          <button class="delete-btn" id="device-cancel" type="button" hidden>Cancel</button>
+          <p id="device-form-error" class="form-error"></p>
+        </form>
+
+        <div class="device-grid" id="all-devices"></div>
+
+      </section>
+
+    </main>
+
+    <aside class="right-panel" id="right-panel">
+
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">🌡 Outdoor weather</span>
+        </div>
+
+        <div class="temperature-circle">
+          <div class="temperature-value" id="weather-temp">--°</div>
+          <div class="temperature-label" id="weather-label">Loading</div>
+        </div>
+
+        <form id="weather-form" class="entry-form">
+          <input class="field" id="weather-city" placeholder="City" required>
+          <button class="save-btn" type="submit">Update</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-card-header">
+          <span class="panel-card-title">⚡ Devices on</span>
+        </div>
+
+        <div class="energy-usage-box">
+          <div class="energy-usage-label">Switched on right now</div>
+          <div class="energy-usage-row">
+            <div>
+              <div class="energy-usage-value" id="energy-value">0</div>
+              <div class="energy-usage-change" id="energy-note">of 0 devices switched on</div>
+            </div>
+            <img src="https://res.cloudinary.com/kquvictp/image/upload/f_auto,q_auto/energy_card_plant" alt="Energy usage graphic" class="energy-usage-image">
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <script src="client.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

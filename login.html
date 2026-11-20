@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HomeSync - Login</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="auth-container">
+		<h1>Welcome to HomeSync</h1>
+		<p>Manage your smart home easily.</p>
+
+		<div class="auth-buttons">
+			<button type="button" onclick="showLogin()">Login</button>
+			<button type="button" onclick="showSignup()">Sign Up</button>
+		</div>
+
+		<form id="loginForm">
+			<h2>Login</h2>
+			<input type="email" name="email" placeholder="Enter your email" autocomplete="email" required>
+			<input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+			<button type="submit">Login</button>
+		</form>
+
+		<form id="signupForm" style="display: none;">
+			<h2>Create Account</h2>
+			<input type="text" name="name" placeholder="Full Name" autocomplete="name" required>
+			<input type="email" name="email" placeholder="Enter your email" autocomplete="email" required>
+			<input type="password" id="password" name="password" placeholder="Create password" autocomplete="new-password" required>
+			<p id="strength" aria-live="polite"></p>
+			<button type="submit">Sign Up</button>
+		</form>
+		<p id="auth-message" class="form-error"></p>
+	</div>
+
+	<script src="client.js"></script>
+	<script>
+		function showLogin() {
+			document.getElementById("loginForm").style.display = "block";
+			document.getElementById("signupForm").style.display = "none";
+			document.getElementById("auth-message").textContent = "";
+		}
+
+		function showSignup() {
+			document.getElementById("loginForm").style.display = "none";
+			document.getElementById("signupForm").style.display = "block";
+			document.getElementById("auth-message").textContent = "";
+		}
+
+		document.getElementById("password").addEventListener("input", function () {
+			const password = this.value;
+			const strength = document.getElementById("strength");
+
+			if (password.length < 8) {
+				strength.textContent = "Use at least 8 characters";
+			} else if (!/[a-z]/i.test(password) || !/\d/.test(password)) {
+				strength.textContent = "Add a letter and a number";
+			} else if (password.length < 12) {
+				strength.textContent = "Medium password";
+			} else {
+				strength.textContent = "Strong password";
+			}
+		});
+
+		document.getElementById("loginForm").addEventListener("submit", async function (event) {
+			event.preventDefault();
+			const message = document.getElementById("auth-message");
+			message.textContent = "";
+			try {
+				const user = await api("/api/users/login", {
+					method: "POST",
+					body: {
+						email: this.email.value,
+						password: this.password.value
+					}
+				});
+				setUser(user);
+				window.location.href = "index.html";
+			} catch (err) {
+				message.textContent = err.message;
+			}
+		});
+
+		document.getElementById("signupForm").addEventListener("submit", async function (event) {
+			event.preventDefault();
+			const message = document.getElementById("auth-message");
+			message.textContent = "";
+			try {
+				const user = await api("/api/users/signup", {
+					method: "POST",
+					body: {
+						name: this.name.value,
+						email: this.email.value,
+						password: this.password.value
+					}
+				});
+				setUser(user);
+				window.location.href = "index.html";
+			} catch (err) {
+				message.textContent = err.message;
+			}
+		});
+	</script>
+</body>
+</html>

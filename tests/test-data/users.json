@@ -1,0 +1,9 @@
+[
+  {
+    "id": "ab0af930-0d4f-4b58-9da7-306eb9ad2ca8",
+    "name": "Bob Jones",
+    "email": "bob@example.com",
+    "passwordHash": "6b148ec1e77207bb862558e6b74efa10:8e4635e43792e569e36edafe9746c289be8337a8758d3dfe68f43afe1d867a6b12818d6cd8d6177c952fa140cb0ab6406bd084cd9632cbdb86f06fba507d9ef0",
+    "createdAt": "2026-11-19T10:25:07.828Z"
+  }
+]

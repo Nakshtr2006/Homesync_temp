@@ -1,0 +1,23 @@
+[
+  {
+    "id": "7788605b-a803-42d4-b249-9ae6c4e48a76",
+    "name": "Arjan Khandelwal",
+    "email": "admin@homesync.com",
+    "passwordHash": "f218b121a8207c91e9c725ca32589771:8e2f8970048ab28f7fcd8c1a0318cd901806b0ade8ef06f0b87f2eb732428ed69c169400c68d89eac0b1cdb69f2880b04d943c7ef8b4a1abebc98f1fc2fbb508",
+    "createdAt": "2026-11-19T10:27:38.249Z"
+  },
+  {
+    "id": "c568bf85-1c29-4553-8390-ed009fa0f60b",
+    "name": "John Doe",
+    "email": "user_1795081044080@example.com",
+    "passwordHash": "0a03d262e2aaaf86792ce821a1ef9d71:305d62ed670b651addbed892ad75857920245645a5981b5a26a6e48ff73a51412d7dae6caec39e7c92e6736aaa93e8291e193f050fb48a69b22041907f8b70c4",
+    "createdAt": "2026-11-19T09:37:24.185Z"
+  },
+  {
+    "id": "71406cfa-71f6-4496-a83d-2fa1b129e2e6",
+    "name": "arjuuuuuuuun",
+    "email": "arjoni@bomm.com",
+    "passwordHash": "ec78012f8e13792d0ce5c9945b7fea6e:f405a854470f1d2e6d7132858aa7602445e3ebd3739b9b0bef43fadcb4f4b74c36036606a3b755bd7d3a32489b1c4a9a0404e7188d7004e61a51d012961b36a7",
+    "createdAt": "2026-11-20T07:07:54.881Z"
+  }
+]
