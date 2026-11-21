@@ -29,10 +29,11 @@ async function startServer() {
     }
 
     const serverPort = process.env.PORT || PORT || 3000;
+    const host = "0.0.0.0";
     const server = await new Promise((resolve, reject) => {
-      const s = app.listen(serverPort, () => {
-        console.log(`[Server] HomeSync server running at http://localhost:${serverPort}`);
-        console.log(`[Server] Health check available at http://localhost:${serverPort}/api/health`);
+      const s = app.listen(serverPort, host, () => {
+        console.log(`[Server] HomeSync server listening on ${host}:${serverPort} (env: ${process.env.NODE_ENV || "development"})`);
+        console.log(`[Server] Health check available at http://${host}:${serverPort}/api/health`);
         resolve(s);
       });
       s.on("error", reject);

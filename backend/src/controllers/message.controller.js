@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const mongoose = require("mongoose");
 const Message = require("../models/message.model");
 const { mongoReady } = require("../configuration/database");
 const { DATA_DIR } = require("../configuration/constants");
@@ -73,9 +74,38 @@ function writeMessagesToFile(messages) {
 
 async function getMessages(req, res, next) {
   try {
-    const messages = readMessagesFromFile();
-    // Return all or filtered
-    res.json(messages);
+    const fileMessages = readMessagesFromFile();
+
+    // In production on Render (or when MongoDB is connected), MongoDB is the persistent source of truth
+    if (mongoReady()) {
+      try {
+        const mongoDocs = await Message.find().sort({ createdAt: -1 }).lean();
+        if (mongoDocs && mongoDocs.length > 0) {
+          const mongoMapped = mongoDocs.map((m) => ({
+            id: m.externalId || String(m._id),
+            name: m.name,
+            email: m.email,
+            subject: m.subject,
+            message: m.message,
+            createdAt: m.createdAt ? new Date(m.createdAt).toISOString() : new Date().toISOString(),
+          }));
+
+          // Merge: include any local file records created in test environments
+          const knownIds = new Set(mongoMapped.map((m) => String(m.id)));
+          fileMessages.forEach((fm) => {
+            if (!knownIds.has(String(fm.id))) {
+              mongoMapped.push(fm);
+            }
+          });
+
+          return res.json(mongoMapped);
+        }
+      } catch (mongoErr) {
+        console.warn("[MessagesStorage] MongoDB read fallback:", mongoErr.message);
+      }
+    }
+
+    res.json(fileMessages);
   } catch (err) {
     next(err);
   }
@@ -85,7 +115,28 @@ async function getMessageById(req, res, next) {
   try {
     const { id } = req.params;
     const messages = readMessagesFromFile();
-    const found = messages.find((m) => String(m.id) === String(id));
+    let found = messages.find((m) => String(m.id) === String(id));
+
+    // Fallback to MongoDB if not in local file (e.g. after Render restart)
+    if (!found && mongoReady()) {
+      try {
+        const query = mongoose.Types.ObjectId.isValid(id)
+          ? { $or: [{ externalId: id }, { _id: id }] }
+          : { externalId: id };
+        const doc = await Message.findOne(query).lean();
+        if (doc) {
+          found = {
+            id: doc.externalId || String(doc._id),
+            name: doc.name,
+            email: doc.email,
+            subject: doc.subject,
+            message: doc.message,
+            createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : new Date().toISOString(),
+          };
+        }
+      } catch (e) {}
+    }
+
     if (!found) {
       return res.status(404).json({ error: "Message not found" });
     }
@@ -119,15 +170,16 @@ async function createMessage(req, res, next) {
       createdAt,
     };
 
-    // 1. Save to local JSON storage
+    // 1. Save to local JSON storage (for local evaluation and file audit requirements)
     const messages = readMessagesFromFile();
     messages.push(newRecord);
     writeMessagesToFile(messages);
 
-    // 2. Mirror into MongoDB Message collection if connected
+    // 2. Persist in MongoDB Message collection (guarantees survival across Render restarts)
     if (mongoReady()) {
       try {
         await Message.create({
+          externalId: newRecord.id,
           name: newRecord.name,
           email: newRecord.email,
           subject: newRecord.subject,
@@ -180,11 +232,11 @@ async function updateMessage(req, res, next) {
 
     writeMessagesToFile(messages);
 
-    // Mirror update to MongoDB if found
+    // Mirror update to MongoDB
     if (mongoReady()) {
       try {
         await Message.findOneAndUpdate(
-          { email: messages[index].email, subject: messages[index].subject },
+          { $or: [{ externalId: id }, { email: messages[index].email, subject: messages[index].subject }] },
           { $set: messages[index] }
         );
       } catch (e) {
@@ -213,7 +265,9 @@ async function deleteMessage(req, res, next) {
     // Mirror delete to MongoDB
     if (mongoReady()) {
       try {
-        await Message.findOneAndDelete({ email: deleted.email, subject: deleted.subject });
+        await Message.findOneAndDelete({
+          $or: [{ externalId: id }, { email: deleted.email, subject: deleted.subject }],
+        });
       } catch (e) {
         // Ignore
       }

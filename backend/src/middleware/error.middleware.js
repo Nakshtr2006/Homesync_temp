@@ -21,6 +21,10 @@ function errorHandler(err, req, res, next) {
     return res.status(400).json({ error: message });
   }
 
+  if (err.status === 403 || (err.message && err.message.startsWith("CORS Error"))) {
+    return res.status(403).json({ error: err.message });
+  }
+
   if (err.code === 11000) {
     return res.status(409).json({ error: "An entry with this value already exists" });
   }

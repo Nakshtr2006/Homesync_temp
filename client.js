@@ -1,20 +1,43 @@
 function getApiBaseUrl() {
-  if (typeof window !== "undefined" && window.location) {
-    const protocol = window.location.protocol;
-    const port = window.location.port;
-    // When served directly by the Express server on port 3000
-    if ((protocol === "http:" || protocol === "https:") && (port === "3000" || port === "")) {
-      return "";
+  if (typeof window !== "undefined") {
+    // 1. Explicit production runtime configuration (from config.js or inline window object)
+    var configuredUrl = window.__HOMESYNC_API_URL__ || window.HOMESYNC_API_URL;
+    if (configuredUrl && typeof configuredUrl === "string" && configuredUrl.trim() !== "") {
+      return configuredUrl.trim().replace(/\/+$/, "");
     }
-    // When running under Live Server (port 5500/5501) or other dev ports, redirect to backend
-    if (protocol === "http:" || protocol === "https:") {
-      return "http://localhost:3000";
-    }
-    // When opened via file:// protocol
-    if (protocol === "file:") {
-      return "http://localhost:3000";
+
+    // 2. Local storage override (allows dynamic testing or switching backend URLs)
+    try {
+      var storedUrl = localStorage.getItem("homesync_api_url");
+      if (storedUrl && typeof storedUrl === "string" && storedUrl.trim() !== "") {
+        return storedUrl.trim().replace(/\/+$/, "");
+      }
+    } catch (e) {}
+
+    // 3. Localhost / Local Development environments
+    if (window.location) {
+      var hostname = window.location.hostname;
+      var protocol = window.location.protocol;
+      var port = window.location.port;
+
+      // When opened via file:// protocol
+      if (protocol === "file:") {
+        return "http://localhost:3000";
+      }
+
+      // When running on localhost or 127.0.0.1
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        // When served directly by the Express backend on port 3000
+        if (port === "3000") {
+          return "";
+        }
+        // When running under Live Server (5500/5501) or other dev ports, redirect to backend
+        return "http://localhost:3000";
+      }
     }
   }
+
+  // 4. Default for production relative paths (e.g. Vercel domain or reverse proxy)
   return "";
 }
 

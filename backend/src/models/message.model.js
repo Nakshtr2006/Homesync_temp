@@ -32,6 +32,11 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    externalId: {
+      type: String,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -40,7 +45,7 @@ const messageSchema = new mongoose.Schema(
 
 messageSchema.set("toJSON", {
   transform: (doc, ret) => {
-    ret.id = ret._id.toString();
+    ret.id = ret.externalId || ret._id.toString();
     delete ret._id;
     delete ret.__v;
     return ret;
