@@ -31,29 +31,74 @@
 			<p id="strength" aria-live="polite"></p>
 			<button type="submit">Sign Up</button>
 		</form>
+		<p id="auth-message" class="form-error"></p>
 	</div>
 
+	<script src="client.js"></script>
 	<script>
 		function showLogin() {
 			document.getElementById("loginForm").style.display = "block";
 			document.getElementById("signupForm").style.display = "none";
+			document.getElementById("auth-message").textContent = "";
 		}
 
 		function showSignup() {
 			document.getElementById("loginForm").style.display = "none";
 			document.getElementById("signupForm").style.display = "block";
+			document.getElementById("auth-message").textContent = "";
 		}
 
 		document.getElementById("password").addEventListener("input", function () {
 			const password = this.value;
 			const strength = document.getElementById("strength");
 
-			if (password.length < 6) {
-				strength.textContent = "Weak Password";
-			} else if (password.length < 10) {
-				strength.textContent = "Medium Password";
+			if (password.length < 8) {
+				strength.textContent = "Use at least 8 characters";
+			} else if (!/[a-z]/i.test(password) || !/\d/.test(password)) {
+				strength.textContent = "Add a letter and a number";
+			} else if (password.length < 12) {
+				strength.textContent = "Medium password";
 			} else {
-				strength.textContent = "Strong Password";
+				strength.textContent = "Strong password";
+			}
+		});
+
+		document.getElementById("loginForm").addEventListener("submit", async function (event) {
+			event.preventDefault();
+			const message = document.getElementById("auth-message");
+			message.textContent = "";
+			try {
+				const user = await api("/api/users/login", {
+					method: "POST",
+					body: {
+						email: this.email.value,
+						password: this.password.value
+					}
+				});
+				setUser(user);
+				window.location.href = "index.html";
+			} catch (err) {
+				message.textContent = err.message;
+			}
+		});
+
+		document.getElementById("signupForm").addEventListener("submit", async function (event) {
+			event.preventDefault();
+			const message = document.getElementById("auth-message");
+			message.textContent = "";
+			try {
+				const user = await api("/api/users/signup", {
+					method: "POST",
+					body: {
+						name: this.name.value,
+						email: this.email.value,
+						password: this.password.value
+					}
+				});
+				setUser(user);
+				window.location.href = "index.html";
+			} catch (err) {
+				message.textContent = err.message;
 			}
 		});
 	</script>

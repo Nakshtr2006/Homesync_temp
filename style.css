@@ -319,12 +319,18 @@ body {
   color: #5C6B5E;
 }
 
-/* Toggle switch + arrow button, stacked on the right of card */
+/* Toggle switch + action buttons on right of card */
 .device-controls {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 14px;
+  gap: 10px;
+}
+
+.device-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .toggle-switch {
@@ -604,6 +610,15 @@ body {
   color: #8A948B;
 }
 
+.room-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #F0F2ED;
+}
+
 /* The "Add a room" card looks a little different,
    like a dashed placeholder button */
 .add-room-card {
@@ -809,10 +824,17 @@ body {
 
 .save-btn,
 .delete-btn {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13.5px;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .save-btn {
@@ -820,10 +842,144 @@ body {
   color: #ffffff;
 }
 
+.save-btn:hover {
+  background: #2D543F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(31, 59, 44, 0.2);
+}
+
+.save-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
 .delete-btn {
-  background: #FBE9E6;
+  background: #FDF1EF;
   color: #B3402F;
+  border: 1px solid #F5D3CD;
   margin-left: 8px;
+}
+
+.delete-btn:hover {
+  background: #FCE1DC;
+  color: #9C2E1F;
+  border-color: #EEABA0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(179, 64, 47, 0.15);
+}
+
+.delete-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ============================================
+   AESTHETIC ACTION BUTTONS (Edit & Delete on Cards)
+================================================ */
+.icon-btn {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+/* Edit / Rename buttons */
+.icon-btn.edit-device,
+.icon-btn.rename-room {
+  background-color: #EDF4EE;
+  color: #234D35;
+  border-color: #D1E2D5;
+}
+
+.icon-btn.edit-device:hover,
+.icon-btn.rename-room:hover {
+  background-color: #DFECE1;
+  color: #163B24;
+  border-color: #B2CEB8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(35, 77, 53, 0.14);
+}
+
+.icon-btn.edit-device:active,
+.icon-btn.rename-room:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Delete buttons */
+.icon-btn.delete-device,
+.icon-btn.delete-room {
+  background-color: #FDF1EF;
+  color: #B83928;
+  border-color: #F6D2CC;
+}
+
+.icon-btn.delete-device:hover,
+.icon-btn.delete-room:hover {
+  background-color: #FCE1DC;
+  color: #9A2A1B;
+  border-color: #EEABA0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(184, 57, 40, 0.14);
+}
+
+.icon-btn.delete-device:active,
+.icon-btn.delete-room:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ============================================
+   ENTRY FORM & EMPTY NOTE STYLING
+================================================ */
+.entry-form {
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.entry-form .field {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0;
+}
+
+.entry-form .save-btn,
+.entry-form .delete-btn {
+  height: 42px;
+  padding: 0 20px;
+}
+
+.entry-form .form-error {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.empty-note {
+  grid-column: 1 / -1;
+  padding: 36px 20px;
+  text-align: center;
+  background: #ffffff;
+  border: 1.5px dashed #D6DBD6;
+  border-radius: 14px;
+  color: #7A867B;
+  font-size: 14px;
+  margin: 12px 0;
 }
 
 @media (max-width: 800px) {
@@ -836,9 +992,53 @@ body {
    DARK MODE
 ================================================ */
 body.dark { background: #121A15; color: #E6ECE7; }
-body.dark .settings-card { background: #1C2A21; }
-body.dark .welcome-title { color: #E6ECE7; }
+body.dark .settings-card,
+body.dark .device-card,
+body.dark .room-card,
+body.dark .panel-card,
+body.dark .entry-form { background: #1C2A21; }
+body.dark .welcome-title,
+body.dark .device-name,
+body.dark .room-name,
+body.dark .panel-card-title,
+body.dark .temperature-value,
+body.dark .section-title { color: #E6ECE7; }
 body.dark .field { background: #121A15; color: #E6ECE7; border-color: #3A4A3F; }
+body.dark .room-actions { border-top-color: #27382D; }
+
+body.dark .icon-btn.edit-device,
+body.dark .icon-btn.rename-room {
+  background-color: #1E3326;
+  color: #A3D4AF;
+  border-color: #2D4C39;
+}
+
+body.dark .icon-btn.edit-device:hover,
+body.dark .icon-btn.rename-room:hover {
+  background-color: #264332;
+  color: #BAE2C4;
+  border-color: #395D47;
+}
+
+body.dark .icon-btn.delete-device,
+body.dark .icon-btn.delete-room {
+  background-color: #341D1B;
+  color: #F29A8E;
+  border-color: #4F2A26;
+}
+
+body.dark .icon-btn.delete-device:hover,
+body.dark .icon-btn.delete-room:hover {
+  background-color: #452421;
+  color: #F7B5AC;
+  border-color: #65332E;
+}
+
+body.dark .empty-note {
+  background: #1C2A21;
+  border-color: #314436;
+  color: #A3B2A6;
+}
 
 /* ============================================
    CONTACT PAGE
@@ -853,7 +1053,47 @@ body.dark .field { background: #121A15; color: #E6ECE7; border-color: #3A4A3F; }
 textarea.field {
   min-height: 110px;
   font-family: inherit;
+  resize: vertical;
 }
+
+.form-error {
+  color: #B3402F;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.form-success {
+  color: #1F3B2C;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.message-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.message-card h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.message-meta {
+  font-size: 12px;
+  color: #8A948B;
+  margin-bottom: 8px;
+}
+
+.message-body {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+body.dark .message-card { background: #1C2A21; }
+body.dark .form-success { color: #C9D3CA; }
 
 @media (max-width: 800px) {
   .contact-grid {

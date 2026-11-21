@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HomeSync - Contact</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="page">
+
+		<aside class="sidebar">
+			<div class="logo-title">HomeSync</div>
+			<nav class="nav-menu">
+				<a class="nav-item" href="index.html">🏠 Dashboard</a>
+				<a class="nav-item" href="index.html#devices">💡 Devices</a>
+				<a class="nav-item" href="index.html#rooms">🚪 Rooms</a>
+				<a class="nav-item" href="settings.html">⚙️ Settings</a>
+				<a class="nav-item active" href="contact.html">✉️ Contact</a>
+			</nav>
+		</aside>
+
+		<main class="main-content">
+			<h1 class="welcome-title">Contact</h1>
+			<p class="welcome-subtitle">Send a message. It is saved on this computer and listed beside the form.</p>
+
+			<div class="contact-grid">
+				<div class="settings-card">
+					<h3 class="settings-group-title">New message</h3>
+					<form id="contact-form">
+						<input class="field" id="name" name="name" placeholder="Full name" maxlength="60" required>
+						<input class="field" id="email" name="email" type="email" placeholder="Email" maxlength="80" required>
+						<input class="field" id="subject" name="subject" placeholder="Subject" maxlength="100" required>
+						<textarea class="field" id="message" name="message" placeholder="Message" maxlength="2000" required></textarea>
+						<button class="save-btn" type="submit">Send message</button>
+						<p id="contact-status" class="form-error" role="status"></p>
+					</form>
+				</div>
+
+				<div>
+					<h3 class="settings-group-title">Saved messages</h3>
+					<div id="message-list"></div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script src="client.js"></script>
+	<script>
+		const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		const status = document.getElementById("contact-status");
+
+		function setStatus(text, ok) {
+			status.textContent = text || "";
+			status.className = ok ? "form-success" : "form-error";
+		}
+
+		function checkForm(body) {
+			if (!body.name.trim()) return "Name is required";
+			if (body.name.trim().length > 60) return "Name must be 60 characters or less";
+			if (!EMAIL_PATTERN.test(body.email.trim())) return "Please enter a valid email address";
+			if (!body.subject.trim()) return "Subject is required";
+			if (body.subject.trim().length > 100) return "Subject must be 100 characters or less";
+			if (!body.message.trim()) return "Message is required";
+			if (body.message.trim().length > 2000) return "Message must be 2000 characters or less";
+			return "";
+		}
+
+		function renderMessages(messages) {
+			const list = document.getElementById("message-list");
+			list.innerHTML = "";
+			if (!messages.length) {
+				list.innerHTML = '<p class="welcome-subtitle">No messages yet.</p>';
+				return;
+			}
+
+			messages.slice().reverse().forEach(function (entry) {
+				const card = document.createElement("article");
+				card.className = "message-card";
+				const title = document.createElement("h3");
+				title.textContent = entry.subject;
+				const meta = document.createElement("div");
+				meta.className = "message-meta";
+				const when = entry.createdAt ? new Date(entry.createdAt).toLocaleString() : "";
+				meta.textContent = entry.name + " · " + entry.email + (when ? " · " + when : "");
+				const body = document.createElement("p");
+				body.className = "message-body";
+				body.textContent = entry.message;
+				card.appendChild(title);
+				card.appendChild(meta);
+				card.appendChild(body);
+				list.appendChild(card);
+			});
+		}
+
+		async function loadMessages() {
+			try {
+				renderMessages(await api("/api/messages"));
+			} catch (err) {
+				setStatus(err.message, false);
+			}
+		}
+
+		const session = getUser();
+		if (session) {
+			document.getElementById("name").value = session.name || "";
+			document.getElementById("email").value = session.email || "";
+		}
+		document.body.classList.toggle("dark", localStorage.getItem("dark") === "true");
+
+		document.getElementById("contact-form").addEventListener("submit", async function (event) {
+			event.preventDefault();
+			const body = {
+				name: document.getElementById("name").value,
+				email: document.getElementById("email").value,
+				subject: document.getElementById("subject").value,
+				message: document.getElementById("message").value
+			};
+			const problem = checkForm(body);
+			if (problem) {
+				setStatus(problem, false);
+				return;
+			}
+
+			setStatus("", false);
+			try {
+				await api("/api/messages", { method: "POST", body: body });
+				document.getElementById("subject").value = "";
+				document.getElementById("message").value = "";
+				setStatus("Message saved.", true);
+				await loadMessages();
+			} catch (err) {
+				setStatus(err.message, false);
+			}
+		});
+
+		loadMessages();
+	</script>
+</body>
+</html>

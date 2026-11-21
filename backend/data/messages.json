@@ -1,0 +1,18 @@
+[
+  {
+    "id": "faa6d59a-6ebe-4664-b0d5-d6b1296b4322",
+    "name": "Lab Check",
+    "email": "lab@example.com",
+    "subject": "Hello",
+    "message": "Saved from the contact form.",
+    "createdAt": "2026-11-18T14:52:05.492Z"
+  },
+  {
+    "id": "93d9821e-25f6-43c2-abdd-a2028cbe71d0",
+    "name": "Eval Tester",
+    "email": "eval@test.com",
+    "subject": "Project Test",
+    "message": "Testing JSON file persistence",
+    "createdAt": "2026-11-19T09:37:24.058Z"
+  }
+]

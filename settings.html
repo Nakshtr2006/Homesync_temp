@@ -14,8 +14,8 @@
 			<div class="logo-title">HomeSync</div>
 			<nav class="nav-menu">
 				<a class="nav-item" href="index.html">🏠 Dashboard</a>
-				<a class="nav-item" href="devices.html">💡 Devices</a>
-				<a class="nav-item" href="rooms.html">🚪 Rooms</a>
+				<a class="nav-item" href="index.html#devices">💡 Devices</a>
+				<a class="nav-item" href="index.html#rooms">🚪 Rooms</a>
 				<a class="nav-item active" href="settings.html">⚙️ Settings</a>
 				<a class="nav-item" href="contact.html">✉️ Contact</a>
 			</nav>
@@ -41,12 +41,14 @@
 					<h3 class="settings-group-title">Edit Profile</h3>
 					<input class="field" id="name" placeholder="Full name">
 					<input class="field" id="email" type="email" placeholder="Email">
+					<input class="field" id="profilePassword" type="password" placeholder="Current password">
 					<button class="save-btn" onclick="saveProfile()">Save</button>
 				</div>
 
 				<!-- CHANGE PASSWORD -->
 				<div class="settings-card">
 					<h3 class="settings-group-title">Change Password</h3>
+					<input class="field pass" type="password" id="currentPass" placeholder="Current password">
 					<input class="field pass" type="password" id="newPass" placeholder="New password">
 					<input class="field pass" type="password" id="confirm" placeholder="Confirm password">
 					<label><input type="checkbox" onchange="showPass(this.checked)"> Show password</label>
@@ -99,16 +101,22 @@
 			<!-- ACCOUNT -->
 			<div class="settings-card">
 				<h3 class="settings-group-title">Account</h3>
+				<input class="field" id="deletePass" type="password" placeholder="Current password to delete">
 				<button class="save-btn" onclick="logout()">Logout</button>
 				<button class="delete-btn" onclick="deleteAccount()">Delete account</button>
 			</div>
 		</main>
 	</div>
 
+	<script src="client.js"></script>
 	<script>
+		const session = getUser();
+		if (!session) window.location.href = "login.html";
+
 		// ----- PROFILE -----
 		function showProfile() {
-			const name = localStorage.getItem("name") || "Your Name";
+			const user = getUser();
+			const name = user ? user.name : "Your Name";
 			const photo = localStorage.getItem("photo");
 			const avatar = document.getElementById("avatar");
 
@@ -132,32 +140,65 @@
 			reader.readAsDataURL(input.files[0]);
 		}
 
-		function saveProfile() {
+		async function saveProfile() {
+			const currentUser = getUser();
+			if (!currentUser) {
+				window.location.href = "login.html";
+				return;
+			}
+
 			const name = document.getElementById("name").value.trim();
 			const email = document.getElementById("email").value.trim();
+			const currentPassword = document.getElementById("profilePassword").value;
 
 			if (name === "" || !email.includes("@")) {
 				alert("Enter a name and a valid email.");
 				return;
 			}
-			localStorage.setItem("name", name);
-			localStorage.setItem("email", email);
-			showProfile();
-			alert("Profile saved!");
+
+			try {
+				const updated = await api("/api/users/" + currentUser.id, {
+					method: "PATCH",
+					body: { name: name, email: email, currentPassword: currentPassword }
+				});
+				setUser(updated);
+				document.getElementById("profilePassword").value = "";
+				showProfile();
+				alert("Profile saved.");
+			} catch (err) {
+				alert(err.message);
+			}
 		}
 
 		// ----- PASSWORD -----
-		function changePass() {
+		async function changePass() {
+			const currentUser = getUser();
+			if (!currentUser) {
+				window.location.href = "login.html";
+				return;
+			}
+
+			const currentPassword = document.getElementById("currentPass").value;
 			const newPass = document.getElementById("newPass").value;
 			const confirm = document.getElementById("confirm").value;
 
-			if (newPass.length < 6) {
-				alert("Password must be at least 6 characters.");
+			if (newPass.length < 8) {
+				alert("Password must be at least 8 characters.");
 			} else if (newPass !== confirm) {
 				alert("Passwords do not match.");
 			} else {
-				localStorage.setItem("password", newPass);
-				alert("Password changed!");
+				try {
+					await api("/api/users/" + currentUser.id + "/password", {
+						method: "PATCH",
+						body: { currentPassword: currentPassword, newPassword: newPass }
+					});
+					document.getElementById("currentPass").value = "";
+					document.getElementById("newPass").value = "";
+					document.getElementById("confirm").value = "";
+					alert("Password changed.");
+				} catch (err) {
+					alert(err.message);
+				}
 			}
 		}
 
@@ -169,48 +210,133 @@
 		}
 
 		// ----- PREFERENCES -----
+		async function persistPreferences() {
+			const currentUser = getUser();
+			if (!currentUser) return;
+			try {
+				await api("/api/users/" + currentUser.id + "/preferences", {
+					method: "PATCH",
+					body: {
+						dark: document.getElementById("dark").checked,
+						lang: document.getElementById("lang").value,
+						unit: document.getElementById("unit").value,
+						emailNotif: document.getElementById("emailNotif").checked,
+						deviceNotif: document.getElementById("deviceNotif").checked
+					}
+				});
+			} catch (e) {
+				// Non-blocking preference sync
+			}
+		}
+
 		function saveDark() {
 			const on = document.getElementById("dark").checked;
 			localStorage.setItem("dark", on);
 			document.body.classList.toggle("dark", on);
+			persistPreferences();
 		}
 
 		function saveLang() {
 			localStorage.setItem("lang", document.getElementById("lang").value);
+			persistPreferences();
 		}
 
 		function saveUnit() {
 			localStorage.setItem("unit", document.getElementById("unit").value);
+			persistPreferences();
 		}
 
 		function saveNotif() {
 			localStorage.setItem("emailNotif", document.getElementById("emailNotif").checked);
 			localStorage.setItem("deviceNotif", document.getElementById("deviceNotif").checked);
+			persistPreferences();
 		}
 
 		// ----- LOGOUT + DELETE -----
 		function logout() {
-			localStorage.removeItem("loggedIn");
+			clearUser();
 			window.location.href = "login.html";
 		}
 
-		function deleteAccount() {
-			if (confirm("Delete your account? This cannot be undone.")) {
-				localStorage.clear();
+		async function deleteAccount() {
+			const currentUser = getUser();
+			if (!currentUser) {
 				window.location.href = "login.html";
+				return;
+			}
+
+			const currentPassword = document.getElementById("deletePass").value;
+			if (!currentPassword) {
+				alert("Enter your current password to delete the account.");
+				return;
+			}
+			if (!confirm("Delete your account? This cannot be undone.")) return;
+
+			try {
+				await api("/api/users/" + currentUser.id, {
+					method: "DELETE",
+					body: { currentPassword: currentPassword }
+				});
+				clearUser();
+				localStorage.removeItem("photo");
+				window.location.href = "login.html";
+			} catch (err) {
+				alert(err.message);
 			}
 		}
 
-		// ----- LOAD SAVED VALUES -----
-		document.getElementById("name").value = localStorage.getItem("name") || "";
-		document.getElementById("email").value = localStorage.getItem("email") || "";
-		document.getElementById("dark").checked = localStorage.getItem("dark") === "true";
-		document.getElementById("lang").value = localStorage.getItem("lang") || "en";
-		document.getElementById("unit").value = localStorage.getItem("unit") || "C";
-		document.getElementById("emailNotif").checked = localStorage.getItem("emailNotif") === "true";
-		document.getElementById("deviceNotif").checked = localStorage.getItem("deviceNotif") === "true";
-		document.body.classList.toggle("dark", localStorage.getItem("dark") === "true");
-		showProfile();
+		// ----- LOAD SAVED VALUES & SYNC WITH MONGODB -----
+		async function loadSavedProfile() {
+			document.getElementById("name").value = session ? session.name : "";
+			document.getElementById("email").value = session ? session.email : "";
+			document.getElementById("dark").checked = localStorage.getItem("dark") === "true";
+			document.getElementById("lang").value = localStorage.getItem("lang") || "en";
+			document.getElementById("unit").value = localStorage.getItem("unit") || "C";
+			document.getElementById("emailNotif").checked = localStorage.getItem("emailNotif") === "true";
+			document.getElementById("deviceNotif").checked = localStorage.getItem("deviceNotif") === "true";
+			document.body.classList.toggle("dark", localStorage.getItem("dark") === "true");
+			showProfile();
+
+			if (session && session.id) {
+				try {
+					const remoteUser = await api("/api/users/" + session.id);
+					if (remoteUser) {
+						if (remoteUser.name) document.getElementById("name").value = remoteUser.name;
+						if (remoteUser.email) document.getElementById("email").value = remoteUser.email;
+						if (remoteUser.preferences) {
+							const prefs = remoteUser.preferences;
+							if (prefs.dark !== undefined) {
+								document.getElementById("dark").checked = prefs.dark;
+								localStorage.setItem("dark", prefs.dark);
+								document.body.classList.toggle("dark", prefs.dark);
+							}
+							if (prefs.lang) {
+								document.getElementById("lang").value = prefs.lang;
+								localStorage.setItem("lang", prefs.lang);
+							}
+							if (prefs.unit) {
+								document.getElementById("unit").value = prefs.unit;
+								localStorage.setItem("unit", prefs.unit);
+							}
+							if (prefs.emailNotif !== undefined) {
+								document.getElementById("emailNotif").checked = prefs.emailNotif;
+								localStorage.setItem("emailNotif", prefs.emailNotif);
+							}
+							if (prefs.deviceNotif !== undefined) {
+								document.getElementById("deviceNotif").checked = prefs.deviceNotif;
+								localStorage.setItem("deviceNotif", prefs.deviceNotif);
+							}
+						}
+						setUser(remoteUser);
+						showProfile();
+					}
+				} catch (err) {
+					// Fallback to local cached session
+				}
+			}
+		}
+
+		loadSavedProfile();
 	</script>
 </body>
 </html>
