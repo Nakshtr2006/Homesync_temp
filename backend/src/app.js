@@ -73,8 +73,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Support preflight OPTIONS requests across all routes
-app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "10kb" }));
 
